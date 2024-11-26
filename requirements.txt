@@ -20,3 +20,4 @@ flask
 flask-cors
 flask-socketio
 groq
+security==1.3.1
