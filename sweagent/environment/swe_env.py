@@ -5,7 +5,6 @@ import hashlib
 import json
 import logging
 import os
-import random
 import re
 import shlex
 import subprocess
@@ -44,6 +43,7 @@ from sweagent.environment.utils import (
 )
 from sweagent.utils.config import keys_config
 from sweagent.utils.log import default_logger, get_logger
+import secrets
 
 LONG_TIMEOUT = float(keys_config.get("SWE_AGENT_ENV_LONG_TIMEOUT", 500))
 AGENT_ACTION_TIMEOUT = float(keys_config.get("SWE_AGENT_ACTION_TIMEOUT", 25))
@@ -1114,7 +1114,7 @@ class SWEEnv(gym.Env):
         except InvalidGithubURL as e:
             msg = "Data path must be a github issue URL if --open_pr is set."
             raise ValueError(msg) from e
-        branch_name = f"swe-agent-fix-#{issue.number}-" + str(random.random())[2:10]
+        branch_name = f"swe-agent-fix-#{issue.number}-" + str(secrets.SystemRandom().random())[2:10]
 
         self.communicate_with_handling(
             input="rm -f model.patch",
