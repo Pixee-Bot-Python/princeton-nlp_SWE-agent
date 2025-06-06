@@ -24,6 +24,7 @@ import docker
 from docker.models.containers import Container
 from sweagent.utils.config import keys_config
 from sweagent.utils.log import get_logger
+from security import safe_command
 
 DOCKER_START_UP_DELAY = float(keys_config.get("SWE_AGENT_DOCKER_START_UP_DELAY", 1))
 GITHUB_ISSUE_URL_PATTERN = re.compile(r"github\.com\/(.*?)\/(.*?)\/issues\/(\d+)")
@@ -114,7 +115,7 @@ def copy_anything_to_container(container: Container, host_path: str, container_p
     cmd = ["docker", "cp", host_path, f"{container.id}:{container_path}"]
     logger.debug(f"Copying {host_path} to container at {container_path} with command: {shlex.join(cmd)}")
     try:
-        subprocess.run(cmd, check=True)
+        safe_command.run(subprocess.run, cmd, check=True)
     except subprocess.CalledProcessError as e:
         msg = f"Error copying {host_path} to container at {container_path}: {e}"
         raise RuntimeError(msg) from e
@@ -270,8 +271,7 @@ def _get_non_persistent_container(ctr_name: str, image_name: str) -> tuple[subpr
         "-l",
     ]
     logger.debug("Starting container with command: %s", shlex.join(startup_cmd))
-    container = subprocess.Popen(
-        startup_cmd,
+    container = safe_command.run(subprocess.Popen, startup_cmd,
         stdin=PIPE,
         stdout=PIPE,
         stderr=STDOUT,
@@ -327,8 +327,7 @@ def _get_persistent_container(
         "-l",
     ]
     logger.debug("Starting container with command: %s", shlex.join(startup_cmd))
-    container = subprocess.Popen(
-        startup_cmd,
+    container = safe_command.run(subprocess.Popen, startup_cmd,
         stdin=PIPE,
         stdout=PIPE,
         stderr=STDOUT,
